@@ -19,19 +19,28 @@ namespace Core {
         return static_cast<int32_t>(rand());  // Generate a random 32-bit signed integer
     }
 
-    void sendCorrelationId(int clientFd, uint32_t correlationId) {
-        int32_t networkCorrelationId = htonl(correlationId);
-        int32_t responseSize = htonl(sizeof(networkCorrelationId)); // 4 bytes for correlation_id
+    void sendResponse(int clientFd, uint32_t correlationId, uint16_t apiVersion) {
+        uint32_t networkCorrelationId = htonl(correlationId);
+        uint16_t networkApiVersion = htons(apiVersion);
 
-        char buffer[sizeof(responseSize) + sizeof(networkCorrelationId)];
+        int32_t responseSize = htonl(sizeof(networkCorrelationId) + sizeof(networkApiVersion));
+        char buffer[sizeof(responseSize) + sizeof(networkCorrelationId) + sizeof(networkApiVersion)];
+
         memcpy(buffer, &responseSize, sizeof(responseSize));
         memcpy(buffer + sizeof(responseSize), &networkCorrelationId, sizeof(networkCorrelationId));
+        memcpy(buffer + sizeof(responseSize) + sizeof(networkCorrelationId), &networkApiVersion, sizeof(networkApiVersion));
 
         send(clientFd, buffer, sizeof(buffer), 0);
     }
 
     uint32_t getCorrelationId(const uint8_t* buffer) {
         return (buffer[8] << 24) | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11];
+    }
+
+    uint16_t getApiVersion(const uint8_t* buffer) {
+        uint16_t apiVersion = (buffer[6] << 8) | buffer[7];
+
+        return (apiVersion <= 3) ? apiVersion : API_VERSION_ERROR_CODE;
     }
 
     void startListener(Server* server) {
@@ -59,11 +68,11 @@ namespace Core {
 
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
 
+        uint16_t apiVersion = getApiVersion(buffer);
         uint32_t correlationId = getCorrelationId(buffer);
-        (void)sendCorrelationId(clientFd, correlationId);
 
-        // std::string toResponse = "7";
-        // (void)send(clientFd, toResponse.c_str(), toResponse.size(), 0);
+        (void)sendResponse(clientFd, correlationId, apiVersion);
+
     }
 
     Server* Server::createServer() {

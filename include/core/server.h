@@ -6,6 +6,7 @@
 namespace Core {
 
     constexpr const int BUFFER_SIZE = 1024;
+    constexpr const int API_VERSION_ERROR_CODE = 35;
 
     class Server {
 
