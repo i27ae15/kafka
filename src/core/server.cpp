@@ -19,19 +19,7 @@ namespace Core {
         return static_cast<int32_t>(rand());  // Generate a random 32-bit signed integer
     }
 
-    void sendCorrelationId(int clientFd) {
-        int32_t correlationId = generateCorrelationId();
-
-        // Convert to big-endian (Kafka uses big-endian format)
-        int32_t networkOrderId = htonl(correlationId);
-
-        // Send the 4-byte integer in binary form
-        send(clientFd, &networkOrderId, sizeof(networkOrderId), 0);
-    }
-
-    void sendKafkaResponse(int clientFd) {
-        int32_t correlationId = 7; // generateCorrelationId();
-
+    void sendCorrelationId(int clientFd, uint32_t correlationId) {
         int32_t networkCorrelationId = htonl(correlationId);
         int32_t responseSize = htonl(sizeof(networkCorrelationId)); // 4 bytes for correlation_id
 
@@ -40,6 +28,10 @@ namespace Core {
         memcpy(buffer + sizeof(responseSize), &networkCorrelationId, sizeof(networkCorrelationId));
 
         send(clientFd, buffer, sizeof(buffer), 0);
+    }
+
+    uint32_t getCorrelationId(const uint8_t* buffer) {
+        return (buffer[8] << 24) | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11];
     }
 
     void startListener(Server* server) {
@@ -67,8 +59,8 @@ namespace Core {
 
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
 
-        // (void)sendCorrelationId(clientFd);
-        (void)sendKafkaResponse(clientFd);
+        uint32_t correlationId = getCorrelationId(buffer);
+        (void)sendCorrelationId(clientFd, correlationId);
 
         // std::string toResponse = "7";
         // (void)send(clientFd, toResponse.c_str(), toResponse.size(), 0);
