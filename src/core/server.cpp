@@ -1,47 +1,20 @@
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
-#include <netdb.h>
 #include <string>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
+#include <vector>
 
 #include <core/server.h>
 #include <core/exceptions.h>
+#include <core/parser.h>
+#include <core/responser.h>
 
 #include <utils.h>
 
 namespace Core {
-
-    int32_t generateCorrelationId() {
-        return static_cast<int32_t>(rand());  // Generate a random 32-bit signed integer
-    }
-
-    void sendResponse(int clientFd, uint32_t correlationId, uint16_t apiVersion) {
-        uint32_t networkCorrelationId = htonl(correlationId);
-        uint16_t networkApiVersion = htons(apiVersion);
-
-        int32_t responseSize = htonl(sizeof(networkCorrelationId) + sizeof(networkApiVersion));
-        char buffer[sizeof(responseSize) + sizeof(networkCorrelationId) + sizeof(networkApiVersion)];
-
-        memcpy(buffer, &responseSize, sizeof(responseSize));
-        memcpy(buffer + sizeof(responseSize), &networkCorrelationId, sizeof(networkCorrelationId));
-        memcpy(buffer + sizeof(responseSize) + sizeof(networkCorrelationId), &networkApiVersion, sizeof(networkApiVersion));
-
-        send(clientFd, buffer, sizeof(buffer), 0);
-    }
-
-    uint32_t getCorrelationId(const uint8_t* buffer) {
-        return (buffer[8] << 24) | (buffer[9] << 16) | (buffer[10] << 8) | buffer[11];
-    }
-
-    uint16_t getApiVersion(const uint8_t* buffer) {
-        uint16_t apiVersion = (buffer[6] << 8) | buffer[7];
-
-        return (apiVersion <= 3) ? apiVersion : API_VERSION_ERROR_CODE;
-    }
 
     void startListener(Server* server) {
         PRINT_SUCCESS("LISTEN STARTED, WAITING FOR CONNECTION ON : " + std::to_string(server->serverFd));
@@ -68,11 +41,20 @@ namespace Core {
 
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
 
-        uint16_t apiVersion = getApiVersion(buffer);
-        uint32_t correlationId = getCorrelationId(buffer);
+        std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
+            ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion}
+        };
+        Responser responser = Responser(apiVersionArray);
 
-        (void)sendResponse(clientFd, correlationId, apiVersion);
+        responser.correlationId = parser->getCorrelationId(buffer);
+        responser.apiVersion = parser->getApiVersion(buffer);
 
+        if (responser.apiVersion > maxApiVersion) {
+            responser.apiVersion = 0;
+            responser.code = UNSUPPORTED_API_ERROR_CODE;
+        }
+
+        (void)responser.sendResponse(clientFd);
     }
 
     Server* Server::createServer() {
@@ -107,7 +89,15 @@ namespace Core {
         return server;
     }
 
-    Server::Server() : serverFd{}, reuse{}, connectionBacklog{}, port{9092} {}
+    Server::Server() :
+        serverFd {},
+        reuse {},
+        connectionBacklog {},
+        port {9092},
+        parser {new Parser()},
+        minApiVersion {},
+        maxApiVersion {4}
+        {}
     Server::~Server() {}
 
 }

@@ -2,11 +2,11 @@
 #define SERVER_H
 
 #include <cstdint>
+#include <core/parser.h>
 
 namespace Core {
 
     constexpr const int BUFFER_SIZE = 1024;
-    constexpr const int API_VERSION_ERROR_CODE = 35;
 
     class Server {
 
@@ -28,6 +28,10 @@ namespace Core {
             uint8_t connectionBacklog;
             uint16_t port;
 
+            uint16_t minApiVersion;
+            uint16_t maxApiVersion;
+
+            Parser* parser;
     };
 
     void startListener(Server* server);
