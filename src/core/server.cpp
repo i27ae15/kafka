@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <vector>
+#include <thread>
 
 #include <core/server.h>
 #include <core/exceptions.h>
@@ -16,13 +17,7 @@
 
 namespace Core {
 
-    void startListener(Server* server) {
-        PRINT_SUCCESS("LISTEN STARTED, WAITING FOR CONNECTION ON : " + std::to_string(server->serverFd));
-
-        struct sockaddr_in clientAddr {};
-        socklen_t clientAddrLen = sizeof(clientAddr);
-        int clientFd = accept(server->serverFd, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
-
+    void handleClientConnection(Server* server, uint16_t clientFd) {
 
         uint8_t buffer[BUFFER_SIZE];
         size_t bytesReceived {};
@@ -37,9 +32,28 @@ namespace Core {
         }
 
         close(clientFd);
+
     }
 
+    void startListener(Server* server) {
+        PRINT_SUCCESS("LISTEN STARTED, WAITING FOR CONNECTION ON : " + std::to_string(server->serverFd));
+        struct sockaddr_in clientAddr {};
+        while (true) {
+            socklen_t clientAddrLen = sizeof(clientAddr);
+            uint16_t clientFd = accept(server->serverFd, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
+
+            PRINT_SUCCESS("CONNECTED WITH CLIENT ON: " + std::to_string(clientFd));
+
+            std::thread worker(handleClientConnection, server, clientFd);
+            worker.detach();
+        }
+
+    }
+
+
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
+
+        PRINT_SUCCESS("HANDLING CLIENT RESPONSE: " + std::to_string(clientFd));
 
         std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
             ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion}

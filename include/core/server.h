@@ -13,6 +13,7 @@ namespace Core {
         public:
 
             friend void startListener(Server* server);
+            friend void handleClientConnection(Server* server, uint16_t clientFd);
 
             static Server* createServer();
 
@@ -35,6 +36,7 @@ namespace Core {
     };
 
     void startListener(Server* server);
+    void handleClientConnection(Server* server, uint16_t clientFd);
 
 }
 
