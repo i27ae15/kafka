@@ -75,6 +75,7 @@
 #define PRINT_COLOR(color, text) std::cout << color     << text << RESET << "\x0A"
 
 #define PRINT_WARNING(text)      std::cout << YELLOW    << "WARNING: " << text << RESET << "\x0A"
+#define PRINT_INFO(text)         std::cout << ORANGE    << "INFO: " << text << RESET << "\x0A"
 #define PRINT_ERROR(text)        std::cout << RED       << "ERROR: "   << text << RESET << "\x0A"
 
 #define PRINT_SUCCESS_NO_SPACE(text)      std::cout << GREEN     << text << RESET
