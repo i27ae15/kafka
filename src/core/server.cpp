@@ -25,7 +25,7 @@ namespace Core {
         while (true) {
             bytesReceived = recv(clientFd, buffer, BUFFER_SIZE, 0);
             if (bytesReceived <= 0) {
-                PRINT_INFO("BREAKING CONNECTION");
+                PRINT_KILL("BREAKING CONNECTION");
                 break;
             }
             (void)server->handleResponse(buffer, bytesReceived, clientFd);

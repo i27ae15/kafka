@@ -78,6 +78,8 @@
 #define PRINT_INFO(text)         std::cout << ORANGE    << "INFO: " << text << RESET << "\x0A"
 #define PRINT_ERROR(text)        std::cout << RED       << "ERROR: "   << text << RESET << "\x0A"
 
+#define PRINT_KILL(text)        std::cout << RED        << text << RESET << "\x0A"
+
 #define PRINT_SUCCESS_NO_SPACE(text)      std::cout << GREEN     << text << RESET
 #define PRINT_WARNING_NO_SPACE(text)      std::cout << YELLOW    << text << RESET
 #define PRINT_ERROR_NO_SPACE(text)        std::cout << RED       << text << RESET
