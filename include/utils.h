@@ -86,6 +86,5 @@
 
 #define PRINT_BLOB(text)    PRINT_COLOR(BLUE, text)
 #define PRINT_TREE(text)    PRINT_COLOR(PINK, text)
-#define PRINT_INFO(text)  PRINT_COLOR(ORANGE, text)
 #define PRINT_DELTA(text)   PRINT_COLOR(LIGHT_BLUE, text)
 
