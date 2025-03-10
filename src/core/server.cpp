@@ -43,17 +43,13 @@ namespace Core {
             uint16_t clientFd = accept(server->serverFd, reinterpret_cast<struct sockaddr*>(&clientAddr), &clientAddrLen);
 
             PRINT_SUCCESS("CONNECTED WITH CLIENT ON: " + std::to_string(clientFd));
-
             std::thread worker(handleClientConnection, server, clientFd);
             worker.detach();
         }
 
     }
 
-
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
-
-        PRINT_SUCCESS("HANDLING CLIENT RESPONSE: " + std::to_string(clientFd));
 
         std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
             ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion}
