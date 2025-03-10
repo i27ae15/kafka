@@ -6,7 +6,10 @@
 
 namespace Core {
 
-    constexpr const int BUFFER_SIZE = 1024;
+    constexpr const uint16_t BUFFER_SIZE = 1024;
+    constexpr const uint16_t DESCRIBE_TOPIC_API = 75;
+    constexpr const uint16_t MIN_API_VERSION = 0;
+    constexpr const uint16_t MAX_API_VERSION = 4;
 
     class Server {
 

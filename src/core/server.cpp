@@ -53,7 +53,7 @@ namespace Core {
 
         std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
             ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion},
-            ApiVersion{75, 0, 0}
+            ApiVersion{DESCRIBE_TOPIC_API, minApiVersion, maxApiVersion}
         };
         Responser responser = Responser(apiVersionArray);
 
@@ -106,8 +106,8 @@ namespace Core {
         connectionBacklog {},
         port {9092},
         parser {new Parser()},
-        minApiVersion {},
-        maxApiVersion {4}
+        minApiVersion {MIN_API_VERSION},
+        maxApiVersion {MAX_API_VERSION}
         {}
     Server::~Server() {}
 
