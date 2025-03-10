@@ -52,7 +52,8 @@ namespace Core {
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
 
         std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
-            ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion}
+            ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion},
+            ApiVersion{75, 0, 0}
         };
         Responser responser = Responser(apiVersionArray);
 
