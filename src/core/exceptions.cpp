@@ -26,4 +26,6 @@ namespace ServerException {
 
     ListenFailed::ListenFailed() : BaseException("Listen failed") {}
 
+    ApiNotSupported::ApiNotSupported() : BaseException("API not supported") {}
+
 }

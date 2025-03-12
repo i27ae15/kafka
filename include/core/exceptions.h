@@ -39,6 +39,11 @@ namespace ServerException {
             ListenFailed();
     };
 
+    class ApiNotSupported : public BaseException {
+        public:
+            ApiNotSupported();
+    };
+
 }
 
 #endif // SERVER_EXCEPTION_H

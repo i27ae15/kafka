@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <string>
 
+#include <core/types.h>
+
 namespace Core {
 
     // Example response
@@ -23,24 +25,22 @@ namespace Core {
     // Throttle Time (4 bytes) [moved to end in version 3+]
     // Tagged Fields (1+ bytes, variable length)
 
-    constexpr const uint8_t UNSUPPORTED_API_ERROR_CODE = 35;
-
-    struct ApiVersion {
-        uint16_t apiKey;
-        uint16_t minVersion;
-        uint16_t maxVersion;
-    };
-
     class Responser {
 
         public:
 
-            Responser(std::vector<ApiVersion> apiVerArray);
+            Responser(
+                uint16_t clientFd,
+                std::vector<CoreTypes::ApiVersion> apiVerArray,
+                CoreTypes::ParsedRequest pRequest
+            );
             ~Responser();
 
             void sendResponse(uint16_t clientFd);
 
             bool isCleanCode();
+
+            uint16_t clientFd;
 
             uint32_t correlationId;
             uint32_t throttleTime;
@@ -50,36 +50,26 @@ namespace Core {
 
             uint32_t responseSize;
 
-            std::vector<ApiVersion> apiVerArray;
+            std::vector<CoreTypes::ApiVersion> apiVerArray;
+            CoreTypes::ParsedRequest pRequest;
 
             std::string requestBody;
 
         private:
 
-        /**
-         * @brief Calculates the total size of a Kafka protocol response message.
-         *
-         * @details This function computes the total byte size of a Kafka protocol response
-         * message. The calculation starts with 8 bytes for fixed protocol fields
-         * (typically for message size and request API key), then adds the size of various
-         * response-specific fields.
-         *
-         * Response structure includes:
-         * - 4 bytes for correlation ID (matches the ID from the request)
-         * - 2 bytes for response error code
-         * - 1 byte for API versions count
-         * - Conditionally 4 bytes for API version if the error code is clean
-         * - 2 bytes for API key
-         * - 2 bytes for minimum supported version
-         * - 2 bytes for maximum supported version
-         * - 1 byte for tagged field
-         * - 1 byte for additional end marker
-         *
-         * @return The total size of the response message in bytes
-         */
-        uint32_t getResponseSize();
+            char* bufferPtr;
 
-        void addApiVersionArray(char* buffer, char*& ptr);
+            void addEmptyTag();
+            void addErrorCode();
+            void addTopicsArray();
+            void addThrottleTime();
+            void addCorrelationId();
+            void addApiVersionArray();
+            void addResponseSize(char* buffer);
+
+            void processKey18();
+            void processKey75();
+
 
     };
 

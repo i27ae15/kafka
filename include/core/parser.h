@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include <core/types.h>
+
 namespace Core {
 
     // Example Kafka request:
@@ -33,6 +35,9 @@ namespace Core {
 
         uint16_t getClientIdLength(const uint8_t* buffer);
 
+        std::vector<std::string> getTopics(const uint8_t* buffer, uint16_t& offset);
+
+        CoreTypes::ParsedRequest parseRequest(const uint8_t* buffer);
     };
 
 }

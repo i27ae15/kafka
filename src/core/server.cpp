@@ -51,18 +51,16 @@ namespace Core {
 
     void Server::handleResponse(const uint8_t* buffer, size_t bytesReceived, uint16_t clientFd) {
 
-        std::vector<ApiVersion> apiVersionArray = std::vector<ApiVersion>{
-            ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion},
-            ApiVersion{DESCRIBE_TOPIC_API, minApiVersion, maxApiVersion}
+        std::vector<CoreTypes::ApiVersion> apiVersionArray = std::vector<CoreTypes::ApiVersion>{
+            CoreTypes::ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion},
+            CoreTypes::ApiVersion{CoreTypes::DESCRIBE_TOPIC_API, minApiVersion, maxApiVersion}
         };
-        Responser responser = Responser(apiVersionArray);
+        CoreTypes::ParsedRequest pRequest = parser->parseRequest(buffer);
+        Responser responser = Responser(clientFd, apiVersionArray, pRequest);
 
-        responser.correlationId = parser->getCorrelationId(buffer);
-        responser.apiVersion = parser->getApiVersion(buffer);
-
-        if (responser.apiVersion > maxApiVersion) {
+        if (pRequest.apiVersion > maxApiVersion) {
             responser.apiVersion = 0;
-            responser.code = UNSUPPORTED_API_ERROR_CODE;
+            responser.code = CoreTypes::API_VERSION_ERROR_CODE;
         }
 
         (void)responser.sendResponse(clientFd);
