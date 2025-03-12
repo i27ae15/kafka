@@ -162,7 +162,7 @@ namespace Core {
     void Responser::sendResponse(uint16_t clientFd) {
 
         char buffer[sizeof(uint32_t) + CoreTypes::MEGA_BYTE_SIZE];
-        bufferPtr = buffer + 4;
+        bufferPtr = buffer + 4; // Reserved first four bytes to add response size
 
         addCorrelationId();
 
