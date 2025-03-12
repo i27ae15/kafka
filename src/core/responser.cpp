@@ -173,6 +173,8 @@ namespace Core {
 
             case CoreTypes::NORMAL_API:
                 (void)processKey18();
+                break;
+
             default:
                 break;
         }
