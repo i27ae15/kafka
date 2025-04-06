@@ -5,6 +5,9 @@
 
 #include <utils.h>
 
+#include <topic/topic.h>
+#include <topic/structs.h>
+
 #include <core/responser.h>
 #include <core/types.h>
 
@@ -58,6 +61,12 @@ namespace Core {
 
     void Responser::addTopicsArray() {
         uint8_t arrayLength = pRequest.topics.size() + 1;
+
+        PRINT_HIGHLIGHT("REQUESTED TOPIC: " + pRequest.topics[0]);
+
+        // Read the file
+        Topics::Topic topics = Topics::Topic();
+        std::vector<TopicStructs::RecordBatchHeader*> records = topics.getRecords();
 
         memcpy(bufferPtr, &arrayLength, CoreTypes::BYTE_SIZE);
         bufferPtr += CoreTypes::BYTE_SIZE;
