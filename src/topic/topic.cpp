@@ -3,6 +3,8 @@
 #include <fstream>
 #include <stdexcept>
 #include <cstdint>
+#include <unordered_map>
+#include <set>
 
 #include <utils.h>
 
@@ -13,7 +15,7 @@
 namespace Topics {
 
     Topic::Topic(std::string fileName)
-    : fileName {fileName}, records{}, recordsLooked{}
+    : fileName {fileName}, records{}, recordsLooked{}, recordsFound{}
     {}
     Topic::~Topic() {}
 
@@ -28,4 +30,15 @@ namespace Topics {
         return recordHeaders;
     }
 
+    std::unordered_map<std::string, std::vector<TopicStructs::Record*>> Topic::findTopics(
+        const std::set<std::string>& topicsToFind
+    ) {
+
+        std::unordered_map<std::string, std::vector<TopicStructs::Record*>> topicsFound {};
+
+        Reader reader = Reader(fileName);
+        reader.findTopics(topicsToFind, topicsFound, recordHeaders, records);
+
+        return topicsFound;
+    }
 }

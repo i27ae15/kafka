@@ -1,7 +1,13 @@
+#include <string>
+#include <array>
+#include <cstdint>
+#include <sstream>
+#include <iomanip>
+#include <stdexcept>
+
 #include <utils.h>
 
 #include <topic/structs.h>
-
 
 namespace TopicUtils {
 
@@ -53,7 +59,16 @@ namespace TopicUtils {
 
         TopicStructs::BaseRecordValue* value = record->recordValue;
 
-        PRINT_INFO("PRINTING RECORD_VALUE");
+        if (auto* feature = dynamic_cast<TopicStructs::RecordFeatureLevelValue*>(value)) {
+            PRINT_INFO("PRINTING FEATURE_RECORD_VALUE");
+        }
+        else if (auto* topic = dynamic_cast<TopicStructs::RecordTopicValue*>(value)) {
+            PRINT_INFO("PRINTING TOPIC_RECORD_VALUE");
+        }
+        else if (auto* partition = dynamic_cast<TopicStructs::RecordPartitionValue*>(value)) {
+            PRINT_INFO("PRINTING PARTITION_RECORD_VALUE");
+        }
+
         PRINT_HIGHLIGHT("FRAME_VERSION: " + std::to_string(value->frameVersion));
         PRINT_HIGHLIGHT("TYPE: " + std::to_string(value->type));  // This is still stored in the object
         PRINT_HIGHLIGHT("VERSION: " + std::to_string(value->version));
@@ -87,6 +102,41 @@ namespace TopicUtils {
 
         PRINT_HIGHLIGHT("TAGGED_FIELDS_COUNT: " + std::to_string(value->taggedFieldsCount));
         PRINT_SML_SEPARATION;
+    }
+
+    std::array<uint8_t, 16> parseUUIDToBytes(const std::string& uuidStr) {
+        std::array<uint8_t, 16> bytes{};
+        std::istringstream ss;
+        size_t byteIndex = 0;
+
+        for (size_t i = 0; i < uuidStr.size(); ++i) {
+            if (uuidStr[i] == '-') continue;
+
+            if (i + 1 >= uuidStr.size()) {
+                throw std::runtime_error("Invalid UUID string");
+            }
+
+            std::string byteStr = uuidStr.substr(i, 2);
+            ss.clear();
+            ss.str(byteStr);
+            int byte;
+            ss >> std::hex >> byte;
+
+            if (ss.fail()) {
+                throw std::runtime_error("Invalid hex in UUID");
+            }
+
+            bytes[byteIndex++] = static_cast<uint8_t>(byte);
+            ++i; // skip the next character since we already used it
+
+            if (byteIndex >= 16) break;
+        }
+
+        if (byteIndex != 16) {
+            throw std::runtime_error("UUID must result in 16 bytes");
+        }
+
+        return bytes;
     }
 
 

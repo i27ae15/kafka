@@ -2,11 +2,14 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <cstring>
+#include <unordered_map>
+#include <array>
 
 #include <utils.h>
 
 #include <topic/topic.h>
 #include <topic/structs.h>
+#include <topic/utils.h>
 
 #include <core/responser.h>
 #include <core/types.h>
@@ -62,11 +65,16 @@ namespace Core {
     void Responser::addTopicsArray() {
         uint8_t arrayLength = pRequest.topics.size() + 1;
 
-        PRINT_HIGHLIGHT("REQUESTED TOPIC: " + pRequest.topics[0]);
+        std::string topicName = *pRequest.topics.begin();
+        PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName  + " | SIZE: " + std::to_string(topicName.size()));
 
         // Read the file
-        Topics::Topic topics = Topics::Topic();
-        std::vector<TopicStructs::RecordBatchHeader*> records = topics.getRecords();
+        Topics::Topic topic = Topics::Topic();
+
+        // std::vector<TopicStructs::RecordBatchHeader*> records = topic.getRecords();
+        std::unordered_map<
+            std::string, std::vector<TopicStructs::Record*>
+        > topicsFound = topic.findTopics(pRequest.topics);
 
         memcpy(bufferPtr, &arrayLength, CoreTypes::BYTE_SIZE);
         bufferPtr += CoreTypes::BYTE_SIZE;
@@ -76,7 +84,11 @@ namespace Core {
         for (std::string topic : pRequest.topics) {
 
             // add unknow topic error code for the moment
-            uint16_t networkErrorCode = htons(CoreTypes::UNKNOW_TOPIC_ERROR_CODE);
+
+            bool topicExists = topicsFound.count(topic);
+
+            std::uint16_t errorCode = topicExists ? CoreTypes::NO_ERROR : CoreTypes::UNKNOW_TOPIC_ERROR_CODE;
+            uint16_t networkErrorCode = htons(errorCode);
             memcpy(bufferPtr, &networkErrorCode, CoreTypes::BYTE_SIZE * 2);
             bufferPtr += CoreTypes::BYTE_SIZE * 2;
             responseSize += CoreTypes::BYTE_SIZE * 2;
@@ -90,14 +102,21 @@ namespace Core {
             bufferPtr += topic.size();
             responseSize += topic.size();
 
-            memcpy(bufferPtr, CoreTypes::NULL_UUID, CoreTypes::NULL_UUID_SIZE);
-            bufferPtr += CoreTypes::NULL_UUID_SIZE;
-            responseSize += CoreTypes::NULL_UUID_SIZE;
+            std::array<uint8_t, CoreTypes::UUID_SIZE> uuid = CoreTypes::NULL_UUID;
+            if (topicExists) {
+                auto* topicValue = dynamic_cast<TopicStructs::RecordTopicValue*>(topicsFound[topic][0]->recordValue);
+                uuid = TopicUtils::parseUUIDToBytes(topicValue->uuid);
+            }
+
+            memcpy(bufferPtr, uuid.data(), CoreTypes::UUID_SIZE);
+            bufferPtr += CoreTypes::UUID_SIZE;
+            responseSize += CoreTypes::UUID_SIZE;
 
             // To indicate if is internal
             addEmptyTag();
 
             uint8_t partitionArray = 1;
+            if (topicExists) partitionArray++;
             memcpy(bufferPtr, &partitionArray, CoreTypes::BYTE_SIZE);
             bufferPtr += CoreTypes::BYTE_SIZE;
             responseSize++;

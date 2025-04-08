@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <set>
+#include <array>
 
 namespace CoreTypes {
 
@@ -11,16 +13,17 @@ namespace CoreTypes {
     constexpr const uint8_t DESCRIBE_TOPIC_API = 75;
     constexpr const uint8_t NORMAL_API = 18;
     constexpr const uint16_t UNKNOW_TOPIC_ERROR_CODE = 3;
+    constexpr const uint16_t NO_ERROR = 0;
 
     constexpr const uint8_t BYTE_SIZE = 1;
-    constexpr const uint8_t NULL_UUID[16] = {
+    constexpr const std::array<uint8_t, 16> NULL_UUID = {
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00,
     };
     constexpr const uint8_t NULL_PAGINATION_FIELD = 0xFF;
-    constexpr const uint8_t NULL_UUID_SIZE = 16;
+    constexpr const uint8_t UUID_SIZE = 16;
     constexpr const uint16_t MEGA_BYTE_SIZE = 1024;
 
     struct ApiVersion {
@@ -38,7 +41,7 @@ namespace CoreTypes {
         uint32_t requestSize;
         uint32_t correlationId;
 
-        std::vector<std::string> topics;
+        std::set<std::string> topics;
     };
 
 }

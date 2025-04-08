@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 #include <cstdint>
+#include <unordered_map>
+#include <set>
 
 #include <topic/structs.h>
 
@@ -21,8 +23,13 @@ namespace Topics {
         ~Topic();
 
         std::vector<TopicStructs::RecordBatchHeader*> getRecords();
+        std::unordered_map<std::string, std::vector<TopicStructs::Record*>> findTopics(
+            const std::set<std::string>& recordsToFind
+        );
 
         private:
+
+        std::unordered_map<std::string, std::vector<TopicStructs::Record*>> recordsFound;
 
         std::vector<TopicStructs::RecordBatchHeader*> recordHeaders;
         std::vector<std::vector<TopicStructs::Record*>> records;
@@ -34,10 +41,9 @@ namespace Topics {
 
         bool recordsLooked;
 
-        std::uint8_t getNextByte();
         std::string fileName;
-
         std::vector<std::string> topics;
+
 
     };
 

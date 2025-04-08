@@ -2,6 +2,8 @@
 #include <array>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
+#include <set>
 
 #include <utils.h>
 
@@ -81,6 +83,9 @@ namespace Topics {
 
         while (true) {
             try {
+
+                PRINT_INFO("STARTING BATCH");
+
                 TopicStructs::RecordBatchHeader* batchRecord = readFullBatchHeader();
                 TopicUtils::printBatchRecord(batchRecord);
 
@@ -90,6 +95,8 @@ namespace Topics {
                 readRecords(batchRecord->recordsLength, records, batchIdx);
 
                 batchIdx++;
+                PRINT_INFO("FINISHING");
+
 
             } catch (std::runtime_error) {
 
@@ -100,4 +107,46 @@ namespace Topics {
 
     }
 
+    void Reader::findTopics(
+        const std::set<std::string>& topicsToFind,
+        std::unordered_map<std::string, std::vector<TopicStructs::Record*>>& topics,
+        std::vector<TopicStructs::RecordBatchHeader*>& recordHeaders,
+        std::vector<std::vector<TopicStructs::Record*>>& records
+    ) {
+
+        size_t topicsFound {};
+        size_t batchIdx {};
+
+        (void)openFile();
+
+        while(topicsToFind.size() > topicsFound) {
+
+            try {
+
+                TopicStructs::RecordBatchHeader* batchRecord = readFullBatchHeader();
+                TopicUtils::printBatchRecord(batchRecord);
+
+                recordHeaders.push_back(batchRecord);
+                records.push_back({});
+                readRecords(batchRecord->recordsLength, records, batchIdx);
+
+                batchIdx++;
+                if (batchIdx == 1) continue;
+
+                std::string& topicName = records[batchIdx - 1][0]->recordValue->name;
+
+                if (topicsToFind.count(topicName)) {
+                    topics[topicName] = records[batchIdx - 1];
+                    topicsFound++;
+                }
+
+            } catch (std::runtime_error) {
+                PRINT_INFO("ENTIRE FILED READ, NOT ALL TOPICS FOUND");
+                return;
+            }
+
+        }
+
+        PRINT_SUCCESS("ALL TOPICS FOUND");
+    }
 }

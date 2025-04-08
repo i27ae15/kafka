@@ -37,16 +37,16 @@ namespace Core {
         return (buffer[12] << 8) | buffer[13];
     }
 
-    std::vector<std::string> Parser::getTopics(const uint8_t* buffer, uint16_t& offset) {
+    std::set<std::string> Parser::getTopics(const uint8_t* buffer, uint16_t& offset) {
 
-        std::vector<std::string> results {};
+        std::set<std::string> results {};
         uint8_t arrayLength = buffer[offset++] - 1;
 
-        auto parseArray = [&](uint16_t arrayLength, std::vector<std::string>& saveTo) {
+        auto parseArray = [&](uint16_t arrayLength, std::set<std::string>& saveTo) {
             while (arrayLength--) {
                 uint16_t topicLength = buffer[offset++] - 1;
 
-                saveTo.emplace_back(reinterpret_cast<const char*>(buffer + offset), topicLength);
+                saveTo.insert(std::string(reinterpret_cast<const char*>(buffer + offset), topicLength));
                 offset += topicLength;
             }
         };

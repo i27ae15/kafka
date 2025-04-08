@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <set>
 
 #include <core/types.h>
 
@@ -35,7 +36,7 @@ namespace Core {
 
         uint16_t getClientIdLength(const uint8_t* buffer);
 
-        std::vector<std::string> getTopics(const uint8_t* buffer, uint16_t& offset);
+        std::set<std::string> getTopics(const uint8_t* buffer, uint16_t& offset);
 
         CoreTypes::ParsedRequest parseRequest(const uint8_t* buffer);
     };

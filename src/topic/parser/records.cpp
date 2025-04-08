@@ -1,5 +1,7 @@
 #include <vector>
 
+#include <utils.h>
+
 #include <topic/structs.h>
 #include <topic/parser/reader.h>
 #include <topic/utils.h>
@@ -38,7 +40,7 @@ namespace Topics {
         readValue(recordVal->nameLength);
 
         recordVal->name.clear();
-        for (uint8_t i = {}; i < recordVal->nameLength; ++i) {
+        for (uint8_t i = {}; i < recordVal->nameLength - 1; ++i) {
             readValue(cByte);
             recordVal->name.push_back(static_cast<char>(cByte));
         }
