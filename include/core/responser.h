@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <string>
 
+#include <topic/structs.h>
+
 #include <core/types.h>
 
 namespace Core {
@@ -70,6 +72,15 @@ namespace Core {
             void processKey18();
             void processKey75();
 
+            void addPartitions(std::vector<TopicStructs::Record*> records);
+            void addEmptyPartition();
+
+            void writeUint8(uint8_t value);
+            void writeUint16(uint16_t value);
+            void writeUint32(uint32_t value);
+            void writeString(const std::string& str);
+            void writeBytes(const uint8_t* data, size_t length);
+            void writeUUID(const std::array<uint8_t, CoreTypes::UUID_SIZE>& uuid);
 
     };
 

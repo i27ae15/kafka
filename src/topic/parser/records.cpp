@@ -107,8 +107,8 @@ namespace Topics {
             readValue(record->headersArrayCount);
             records[batchIdx].push_back(record);
 
-            TopicUtils::printRecord(record);
-            TopicUtils::printRecordValue(record);
+            // TopicUtils::printRecord(record);
+            // TopicUtils::printRecordValue(record);
 
         }
     }

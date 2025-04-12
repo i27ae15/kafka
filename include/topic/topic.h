@@ -32,11 +32,11 @@ namespace Topics {
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>> recordsFound;
 
         std::vector<TopicStructs::RecordBatchHeader*> recordHeaders;
-        std::vector<std::vector<TopicStructs::Record*>> records;
 
         // where
         // rSize = recordHeaders.size()
         // records[i] -> (N) own by recordHeader
+        std::vector<std::vector<TopicStructs::Record*>> records;
 
 
         bool recordsLooked;

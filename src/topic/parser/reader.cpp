@@ -124,7 +124,7 @@ namespace Topics {
             try {
 
                 TopicStructs::RecordBatchHeader* batchRecord = readFullBatchHeader();
-                TopicUtils::printBatchRecord(batchRecord);
+                // TopicUtils::printBatchRecord(batchRecord);
 
                 recordHeaders.push_back(batchRecord);
                 records.push_back({});
