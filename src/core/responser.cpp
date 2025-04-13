@@ -44,16 +44,17 @@ namespace Core {
     }
 
     void Responser::addTopicsArray() {
-        writeUint8(pRequest.topics.size() + 1); // arrayLength
 
         std::string topicName = *pRequest.topics.begin();
-        // PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
+        PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
 
         Topics::Topic topic = Topics::Topic();
 
         std::unordered_map<
             std::string, std::vector<TopicStructs::Record*>
         > topicsFound = topic.findTopics(pRequest.topics);
+
+        writeUint8(pRequest.topics.size() + 1); // arrayLength
 
         for (const std::string& topic : pRequest.topics) {
             bool topicExists = topicsFound.count(topic);
@@ -71,7 +72,7 @@ namespace Core {
 
             writeUUID(uuid);
 
-            addEmptyTag();
+            addEmptyTag(); // isInternal = False
             topicExists ? addPartitions(topicsFound[topic]) : addEmptyPartition();
         }
 
@@ -83,14 +84,12 @@ namespace Core {
     void Responser::addPartitions(std::vector<TopicStructs::Record*> records) {
 
         writeUint8(records.size());
-        writeUint16(CoreTypes::NO_ERROR);
 
         for (int i {1}; i < records.size(); i++) {
 
             auto* partitionRecord = dynamic_cast<TopicStructs::RecordPartitionValue*>(records[i]->recordValue);
-
-            writeUint32(CoreTypes::NO_ERROR);
-            writeUint32(partitionRecord->partitionId);
+            writeUint16(CoreTypes::NO_ERROR);
+            writeUint32(i - 1);
             writeUint32(partitionRecord->leader);
             writeUint32(partitionRecord->leaderEpoch);
 
@@ -102,13 +101,20 @@ namespace Core {
             writeUint8(2);
             writeUint32(0x01);
 
+            // Eligible leader replicas (compact array: 0 elements encoded as 0x01)
+            writeUint8(0x01);
+
+            // Last Known ELR (compact array: empty, so encoded as 0x01)
+            writeUint8(0x01);
+
+            // Offline replicas (compact array: empty, so encoded as 0x01)
+            writeUint8(0x01);
 
             addEmptyTag();
-            writeUint32(0x00000df8); // authorizeOperations
 
-            // TopicUtils::printRecordValue(records[i]);
         }
 
+        writeUint32(0x00000df8); // authorizeOperations
         addEmptyTag();
 
     }
@@ -211,6 +217,10 @@ namespace Core {
         writeBytes(uuid.data(), CoreTypes::UUID_SIZE);
     }
 
+    void Responser::writeBool(bool value) {
+        uint8_t byte = value ? 1 : 0;
+        writeUint8(byte);
+    }
 
     void Responser::processKey18() {
         addErrorCode();

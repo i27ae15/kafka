@@ -95,7 +95,6 @@ namespace TopicUtils {
             PRINT_HIGHLIGHT("PARTITION_EPOCH: " + std::to_string(partition->partitionEpoch));
             PRINT_HIGHLIGHT("DIRECTORIES_ARRAY_LENGTH: " + std::to_string(partition->LengthOfDirectoriesArray));
             PRINT_HIGHLIGHT("DIRECTORIES_ARRAY_UUID: " + partition->directoriesArrayUUID);
-            PRINT_HIGHLIGHT("TAGGED_FIELDS_COUNT: " + std::to_string(partition->taggedFieldsCount));
         } else {
             PRINT_HIGHLIGHT("Unknown RecordValueType – no extra fields printed.");
         }

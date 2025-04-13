@@ -111,12 +111,14 @@ namespace Topics {
             // TopicUtils::printRecordValue(record);
 
         }
+
+
     }
 
     TopicStructs::BaseRecordValue* Reader::getRecordValue(std::uint32_t idx, std::uint32_t batchIdx) {
 
         if (batchIdx == 0 && idx == 0) return readFeatureLevelRecord();
-        if (batchIdx == 1 && idx == 0) return readTopicRecordValue();
+        if (idx == 0) return readTopicRecordValue();
 
         return readPartitionRecordValue();
     }

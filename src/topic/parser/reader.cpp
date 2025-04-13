@@ -84,10 +84,10 @@ namespace Topics {
         while (true) {
             try {
 
-                PRINT_INFO("STARTING BATCH");
+                // PRINT_INFO("STARTING BATCH");
 
                 TopicStructs::RecordBatchHeader* batchRecord = readFullBatchHeader();
-                TopicUtils::printBatchRecord(batchRecord);
+                // TopicUtils::printBatchRecord(batchRecord);
 
                 recordHeaders.push_back(batchRecord);
                 records.push_back({});
@@ -95,7 +95,7 @@ namespace Topics {
                 readRecords(batchRecord->recordsLength, records, batchIdx);
 
                 batchIdx++;
-                PRINT_INFO("FINISHING");
+                // PRINT_INFO("FINISHING");
 
 
             } catch (std::runtime_error) {

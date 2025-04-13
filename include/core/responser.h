@@ -81,7 +81,7 @@ namespace Core {
             void writeString(const std::string& str);
             void writeBytes(const uint8_t* data, size_t length);
             void writeUUID(const std::array<uint8_t, CoreTypes::UUID_SIZE>& uuid);
-
+            void writeBool(bool value);
     };
 
 }
