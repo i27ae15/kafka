@@ -19,17 +19,6 @@ namespace Topics {
     {}
     Topic::~Topic() {}
 
-    std::vector<TopicStructs::RecordBatchHeader*> Topic::getRecords() {
-
-        if (recordsLooked) return recordHeaders;
-
-        Reader reader = Reader(fileName);
-        reader.readFileAndSetRecords(recordHeaders, records);
-
-        recordsLooked = true;
-        return recordHeaders;
-    }
-
     std::unordered_map<std::string, std::vector<TopicStructs::Record*>> Topic::findTopics(
         const std::set<std::string>& topicsToFind
     ) {

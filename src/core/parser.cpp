@@ -47,7 +47,7 @@ namespace Core {
                 uint16_t topicLength = buffer[offset++] - 1;
 
                 saveTo.insert(std::string(reinterpret_cast<const char*>(buffer + offset), topicLength));
-                offset += topicLength;
+                offset += topicLength + 1; // Adding one for the empty tag at the end
             }
         };
 

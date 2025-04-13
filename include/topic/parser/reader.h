@@ -19,11 +19,6 @@ namespace Topics {
         Reader(std::string fileName);
         ~Reader();
 
-        void readFileAndSetRecords(
-            std::vector<TopicStructs::RecordBatchHeader*>& recordHeaders,
-            std::vector<std::vector<TopicStructs::Record*>>& records
-        );
-
         void findTopics(
             const std::set<std::string>& topicsToFind,
             std::unordered_map<std::string, std::vector<TopicStructs::Record*>>& topics,

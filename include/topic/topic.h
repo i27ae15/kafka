@@ -22,7 +22,6 @@ namespace Topics {
         Topic(std::string fileName = defaultFileName);
         ~Topic();
 
-        std::vector<TopicStructs::RecordBatchHeader*> getRecords();
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>> findTopics(
             const std::set<std::string>& recordsToFind
         );

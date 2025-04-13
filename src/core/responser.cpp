@@ -46,7 +46,7 @@ namespace Core {
     void Responser::addTopicsArray() {
 
         std::string topicName = *pRequest.topics.begin();
-        PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
+        // PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
 
         Topics::Topic topic = Topics::Topic();
 

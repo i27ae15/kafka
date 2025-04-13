@@ -72,41 +72,6 @@ namespace Topics {
 
     // Methods For Records
 
-    void Reader::readFileAndSetRecords(
-        std::vector<TopicStructs::RecordBatchHeader*>& recordHeaders,
-        std::vector<std::vector<TopicStructs::Record*>>& records
-    ) {
-
-        (void)openFile();
-
-        size_t batchIdx {};
-
-        while (true) {
-            try {
-
-                // PRINT_INFO("STARTING BATCH");
-
-                TopicStructs::RecordBatchHeader* batchRecord = readFullBatchHeader();
-                // TopicUtils::printBatchRecord(batchRecord);
-
-                recordHeaders.push_back(batchRecord);
-                records.push_back({});
-
-                readRecords(batchRecord->recordsLength, records, batchIdx);
-
-                batchIdx++;
-                // PRINT_INFO("FINISHING");
-
-
-            } catch (std::runtime_error) {
-
-                PRINT_SUCCESS("ALL FILE READ");
-                break;
-            }
-        }
-
-    }
-
     void Reader::findTopics(
         const std::set<std::string>& topicsToFind,
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>>& topics,
