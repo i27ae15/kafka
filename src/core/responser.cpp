@@ -166,6 +166,10 @@ namespace Core {
                 (void)processKey18();
                 break;
 
+            case CoreTypes::FETCH_API:
+                (void)processKey1();
+                break;
+
             default:
                 break;
         }
@@ -222,6 +226,14 @@ namespace Core {
         writeUint8(byte);
     }
 
+    void Responser::writeVarInt(uint32_t value) {
+        while ((value & ~0x7F) != 0) {
+            writeUint8((value & 0x7F) | 0x80); // Set continuation bit
+            value >>= 7;
+        }
+        writeUint8(value); // Last byte with MSB = 0
+    }
+
     void Responser::processKey18() {
         addErrorCode();
         addApiVersionArray();
@@ -232,6 +244,14 @@ namespace Core {
         addEmptyTag();
         addThrottleTime();
         addTopicsArray();
+    }
+
+    void Responser::processKey1() {
+        addThrottleTime();
+        writeUint16(0); // ErrorCode
+        writeUint32(0); // Session Id
+        writeVarInt(1); // VarInt(1)
+        addEmptyTag();
     }
 
 }

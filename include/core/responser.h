@@ -71,6 +71,7 @@ namespace Core {
 
             void processKey18();
             void processKey75();
+            void processKey1();
 
             void addPartitions(std::vector<TopicStructs::Record*> records);
             void addEmptyPartition();
@@ -82,6 +83,7 @@ namespace Core {
             void writeBytes(const uint8_t* data, size_t length);
             void writeUUID(const std::array<uint8_t, CoreTypes::UUID_SIZE>& uuid);
             void writeBool(bool value);
+            void writeVarInt(uint32_t value);
     };
 
 }
