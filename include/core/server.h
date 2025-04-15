@@ -8,7 +8,7 @@ namespace Core {
 
     constexpr const uint16_t BUFFER_SIZE = 1024;
     constexpr const uint16_t MIN_API_VERSION = 0;
-    constexpr const uint16_t MAX_API_VERSION = 4;
+    constexpr const uint16_t MAX_API_VERSION = 16;
 
     class Server {
 

@@ -11,7 +11,8 @@ namespace CoreTypes {
 
     constexpr const uint8_t API_VERSION_ERROR_CODE = 35;
     constexpr const uint8_t DESCRIBE_TOPIC_API = 75;
-    constexpr const uint8_t NORMAL_API = 18;
+    constexpr const uint8_t REQUEST_API_VERSIONS = 18;
+    constexpr const uint8_t FETCH_API = 1;
     constexpr const uint16_t UNKNOW_TOPIC_ERROR_CODE = 3;
     constexpr const uint16_t NO_ERROR = 0;
 

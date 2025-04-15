@@ -53,6 +53,7 @@ namespace Core {
 
         std::vector<CoreTypes::ApiVersion> apiVersionArray = std::vector<CoreTypes::ApiVersion>{
             CoreTypes::ApiVersion{parser->getApiKey(buffer), minApiVersion, maxApiVersion},
+            CoreTypes::ApiVersion{CoreTypes::FETCH_API, minApiVersion, maxApiVersion},
             CoreTypes::ApiVersion{CoreTypes::DESCRIBE_TOPIC_API, minApiVersion, maxApiVersion}
         };
         CoreTypes::ParsedRequest pRequest = parser->parseRequest(buffer);

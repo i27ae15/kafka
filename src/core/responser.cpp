@@ -162,7 +162,7 @@ namespace Core {
                 (void)processKey75();
                 break;
 
-            case CoreTypes::NORMAL_API:
+            case CoreTypes::REQUEST_API_VERSIONS:
                 (void)processKey18();
                 break;
 
