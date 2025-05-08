@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include <core/parser.h>
 #include <core/exceptions.h>
@@ -114,11 +115,28 @@ namespace Core {
         return value;
     }
 
-    std::vector<uint8_t> Parser::readUUID(const uint8_t* buffer, uint16_t& offset) {
-        std::vector<uint8_t> uuid(buffer + offset, buffer + offset + 16);
-        offset += 16;
-        return uuid;
+    std::string Parser::readUUID(const uint8_t* buffer, uint16_t& offset) {
+
+        std::uint8_t cByte {};
+
+        std::array<uint8_t, 16> uuidBytes;
+        for (int i = 0; i < 16; ++i) {
+            uuidBytes[i] = buffer[offset + i];
+        }
+
+        std::stringstream ss;
+        ss << std::hex;
+        ss.fill('0');
+
+        for (int i = 0; i < 16; ++i) {
+            ss.width(2);
+            ss << static_cast   <int>(uuidBytes[i]);
+            if (i == 3 || i == 5 || i == 7 || i == 9) ss << "-";
+        }
+
+        return ss.str();
     }
+
 
     bool Parser::readBoolean(const uint8_t* buffer, uint16_t& offset) {
         bool value = buffer[offset] != 0;
@@ -153,11 +171,10 @@ namespace Core {
 
         r.fetchTopics.resize(num_topics); // Resize the vector to hold the fetchTopics
 
-            for (uint32_t i = 0; i < num_topics; ++i) {
-                r.fetchTopics[i].topicId = readUUID(buffer, offset);
-            }
+        for (uint32_t i = 0; i < num_topics; ++i) {
+            r.fetchTopics[i].topicUUID = readUUID(buffer, offset);
+        }
 
-        PRINT_HIGHLIGHT("FINISHED PARSING FETCH REQUEST BODY");
     }
 
     CoreTypes::ParsedRequest Parser::parseRequest(const uint8_t* buffer) {

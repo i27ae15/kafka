@@ -45,13 +45,11 @@ namespace Core {
 
     void Responser::addTopicsArray() {
 
-        // PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
-
         Topics::Topic topic = Topics::Topic();
 
         std::unordered_map<
             std::string, std::vector<TopicStructs::Record*>
-        > topicsFound = topic.findTopics(pRequest.topics);
+        > topicsFound = topic.findTopics(pRequest.topics, TopicStructs::FindBy::NAME);
 
         writeUint8(pRequest.topics.size() + 1); // arrayLength
 
@@ -84,30 +82,37 @@ namespace Core {
         writeUint8(pRequest.fetchTopics.size() + 1);
         if (!pRequest.fetchTopics.size()) return;
 
-        for (const CoreTypes::TopicInfo topic : pRequest.fetchTopics) {
-            for (const uint8_t b : topic.topicId) {writeUint8(b);}
+        for (CoreTypes::TopicInfo topic : pRequest.fetchTopics) {
+            std::array<uint8_t, 16> buuid = TopicUtils::parseUUIDToBytes(topic.topicUUID);
+            writeUUID(buuid);
         }
 
-        bool topicExists {};
-        std::uint16_t errorCode = topicExists ? CoreTypes::NO_ERROR : CoreTypes::UNKNOW_FETCH_TOPIC;
-        // Momentous partitions
-        // addEmptyTag();
-        writeVarInt(2);
-        writeUint32(0);
-        writeUint16(errorCode);
+        Topics::Topic topic = Topics::Topic();
+        std::unordered_map<
+            std::string, std::vector<TopicStructs::Record*>
+        > topicsFound = topic.findTopics({pRequest.fetchTopics[0].topicUUID}, TopicStructs::FindBy::UUID);
 
-        writeUint64(-1);     // high_watermark
-        writeUint64(-1);     // last_stable_offset
-        writeUint64(-1);     // log_start_offset
-        writeVarInt(0 + 1); // diverging_epoch (empty compact array => VarInt(1))
-        writeVarInt(0);     // snapshot_id (nullable struct, null => VarInt(0))
-        writeVarInt(0 + 1); // aborted_transactions (empty compact array => VarInt(1))
-        writeUint32(-1);     // preferred_read_replica
-        writeVarInt(0);
+        for (const CoreTypes::TopicInfo& topic : pRequest.fetchTopics) {
+            bool topicExists = topicsFound.count(topic.topicUUID);
+            std::uint16_t errorCode = topicExists ? CoreTypes::NO_ERROR : CoreTypes::UNKNOW_FETCH_TOPIC;
+            // Momentous partitions
+            // addEmptyTag();
+            writeVarInt(2);
+            writeUint32(0);
+            writeUint16(errorCode);
 
-        addEmptyTag();
-        addEmptyTag();
+            writeUint64(-1);     // high_watermark
+            writeUint64(-1);     // last_stable_offset
+            writeUint64(-1);     // log_start_offset
+            writeVarInt(0 + 1); // diverging_epoch (empty compact array => VarInt(1))
+            writeVarInt(0);     // snapshot_id (nullable struct, null => VarInt(0))
+            writeVarInt(0 + 1); // aborted_transactions (empty compact array => VarInt(1))
+            writeUint32(-1);     // preferred_read_replica
+            writeVarInt(0);
 
+            addEmptyTag();
+            addEmptyTag();
+        }
     }
 
     void Responser::addPartitions(std::vector<TopicStructs::Record*> records) {

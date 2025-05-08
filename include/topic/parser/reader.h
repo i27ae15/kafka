@@ -21,6 +21,7 @@ namespace Topics {
 
         void findTopics(
             const std::set<std::string>& topicsToFind,
+            TopicStructs::FindBy findBy,
             std::unordered_map<std::string, std::vector<TopicStructs::Record*>>& topics,
             std::vector<TopicStructs::RecordBatchHeader*>& recordHeaders,
             std::vector<std::vector<TopicStructs::Record*>>& records

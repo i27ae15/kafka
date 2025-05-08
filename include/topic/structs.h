@@ -13,6 +13,11 @@ namespace TopicStructs {
         Partition,
     };
 
+    enum class FindBy {
+        NAME,
+        UUID,
+    };
+
     struct RecordBatchHeader {
 
         // As Written is the order that the information appears on the logs file

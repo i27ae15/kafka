@@ -20,13 +20,14 @@ namespace Topics {
     Topic::~Topic() {}
 
     std::unordered_map<std::string, std::vector<TopicStructs::Record*>> Topic::findTopics(
-        const std::set<std::string>& topicsToFind
+        const std::set<std::string>& topicsToFind,
+        TopicStructs::FindBy findBy
     ) {
 
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>> topicsFound {};
 
         Reader reader = Reader(fileName);
-        reader.findTopics(topicsToFind, topicsFound, recordHeaders, records);
+        reader.findTopics(topicsToFind, findBy, topicsFound, recordHeaders, records);
 
         return topicsFound;
     }

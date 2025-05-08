@@ -47,7 +47,7 @@ namespace CoreTypes {
     };
 
     struct TopicInfo {
-        std::vector<uint8_t> topicId; // UUID is 16 bytes
+        std::string topicUUID; // UUID is 16 bytes
         std::vector<PartitionInfo> partitions;
     };
 

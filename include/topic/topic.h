@@ -23,7 +23,8 @@ namespace Topics {
         ~Topic();
 
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>> findTopics(
-            const std::set<std::string>& recordsToFind
+            const std::set<std::string>& recordsToFind,
+            TopicStructs::FindBy findBy
         );
 
         private:

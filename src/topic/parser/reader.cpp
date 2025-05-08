@@ -74,6 +74,7 @@ namespace Topics {
 
     void Reader::findTopics(
         const std::set<std::string>& topicsToFind,
+        TopicStructs::FindBy findBy,
         std::unordered_map<std::string, std::vector<TopicStructs::Record*>>& topics,
         std::vector<TopicStructs::RecordBatchHeader*>& recordHeaders,
         std::vector<std::vector<TopicStructs::Record*>>& records
@@ -98,11 +99,25 @@ namespace Topics {
                 batchIdx++;
                 if (batchIdx == 1) continue;
 
-                std::string& topicName = records[batchIdx - 1][0]->recordValue->name;
+                TopicStructs::BaseRecordValue* value = records[batchIdx - 1][0]->recordValue;
 
-                if (topicsToFind.count(topicName)) {
-                    topics[topicName] = records[batchIdx - 1];
-                    topicsFound++;
+                if (findBy == TopicStructs::FindBy::UUID) {
+                    if (auto* topicValue = dynamic_cast<TopicStructs::RecordTopicValue*>(value)) {
+                        std::string& uuid = topicValue->uuid;
+
+                        if (topicsToFind.count(uuid)) {
+                            topics[uuid] = records[batchIdx - 1];
+                            topicsFound++;
+                        }
+                    }
+                }
+                else if (findBy == TopicStructs::FindBy::NAME) {
+                    std::string& topicName = records[batchIdx - 1][0]->recordValue->name;
+
+                    if (topicsToFind.count(topicName)) {
+                        topics[topicName] = records[batchIdx - 1];
+                        topicsFound++;
+                    }
                 }
 
             } catch (std::runtime_error) {
