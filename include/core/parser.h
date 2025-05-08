@@ -21,10 +21,27 @@ namespace Core {
 
     class Parser {
 
+        private:
+
+        uint8_t readInt8(const uint8_t* buffer, uint16_t& offset);
+        uint16_t readInt16(const uint8_t* buffer, uint16_t& offset);
+        uint32_t readInt32(const uint8_t* buffer, uint16_t& offset);
+        uint64_t readInt64(const uint8_t* buffer, uint16_t& offset);
+
+        uint32_t readVarUInt(const uint8_t* buffer, uint16_t& offset);
+        uint32_t readCompactArraySize(const uint8_t* buffer, uint16_t& offset);
+        std::vector<uint8_t> readUUID(const uint8_t* buffer, uint16_t& offset);
+        std::string readCompactNullableString(const uint8_t* buffer, uint16_t& offset);
+
+        bool readBoolean(const uint8_t* buffer, uint16_t& offset);
+
+        void getFetchTopics(CoreTypes::ParsedRequest& r, const uint8_t* buffer, uint16_t& offset);
+
         public:
 
         Parser();
         ~Parser();
+
 
         std::string getClientId(const uint8_t* buffer, uint16_t finishAt);
 

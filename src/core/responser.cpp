@@ -45,7 +45,6 @@ namespace Core {
 
     void Responser::addTopicsArray() {
 
-        std::string topicName = *pRequest.topics.begin();
         // PRINT_HIGHLIGHT("REQUESTED TOPIC: " + topicName + " | SIZE: " + std::to_string(topicName.size()));
 
         Topics::Topic topic = Topics::Topic();
@@ -80,6 +79,36 @@ namespace Core {
         addEmptyTag();
     }
 
+    void Responser::addTopicsFetch() {
+
+        writeUint8(pRequest.fetchTopics.size() + 1);
+        if (!pRequest.fetchTopics.size()) return;
+
+        for (const CoreTypes::TopicInfo topic : pRequest.fetchTopics) {
+            for (const uint8_t b : topic.topicId) {writeUint8(b);}
+        }
+
+        bool topicExists {};
+        std::uint16_t errorCode = topicExists ? CoreTypes::NO_ERROR : CoreTypes::UNKNOW_FETCH_TOPIC;
+        // Momentous partitions
+        // addEmptyTag();
+        writeVarInt(2);
+        writeUint32(0);
+        writeUint16(errorCode);
+
+        writeUint64(-1);     // high_watermark
+        writeUint64(-1);     // last_stable_offset
+        writeUint64(-1);     // log_start_offset
+        writeVarInt(0 + 1); // diverging_epoch (empty compact array => VarInt(1))
+        writeVarInt(0);     // snapshot_id (nullable struct, null => VarInt(0))
+        writeVarInt(0 + 1); // aborted_transactions (empty compact array => VarInt(1))
+        writeUint32(-1);     // preferred_read_replica
+        writeVarInt(0);
+
+        addEmptyTag();
+        addEmptyTag();
+
+    }
 
     void Responser::addPartitions(std::vector<TopicStructs::Record*> records) {
 
@@ -204,6 +233,22 @@ namespace Core {
         responseSize += sizeof(net);
     }
 
+    void Responser::writeUint64(uint64_t value) {
+        unsigned char* current_ptr = reinterpret_cast<unsigned char*>(bufferPtr);
+
+        current_ptr[0] = (value >> 56) & 0xFF; // Most significant byte
+        current_ptr[1] = (value >> 48) & 0xFF;
+        current_ptr[2] = (value >> 40) & 0xFF;
+        current_ptr[3] = (value >> 32) & 0xFF;
+        current_ptr[4] = (value >> 24) & 0xFF;
+        current_ptr[5] = (value >> 16) & 0xFF;
+        current_ptr[6] = (value >> 8)  & 0xFF;
+        current_ptr[7] = value & 0xFF;
+
+        bufferPtr = reinterpret_cast<decltype(bufferPtr)>(current_ptr + sizeof(uint64_t));
+        responseSize += sizeof(uint64_t);
+    }
+
     void Responser::writeString(const std::string& str) {
         writeUint8(static_cast<uint8_t>(str.size() + 1)); // +1 for null terminator or Kafka-style strings
         memcpy(bufferPtr, str.c_str(), str.size());
@@ -247,9 +292,12 @@ namespace Core {
     }
 
     void Responser::processKey1() {
+
+        addEmptyTag();
         addThrottleTime();
         writeUint16(0); // ErrorCode
         writeUint32(0); // Session Id
+        addTopicsFetch();
         writeVarInt(1); // VarInt(1)
         addEmptyTag();
     }

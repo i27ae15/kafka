@@ -12,6 +12,46 @@ namespace Core {
     Parser::Parser() {}
     Parser::~Parser() {};
 
+    // Reads a single byte as Int8 and advances the offset
+    uint8_t Parser::readInt8(const uint8_t* buffer, uint16_t& offset) {
+        uint8_t value = buffer[offset];
+        offset += 1;
+        return value;
+    }
+
+    // Reads a big-endian Int16 from the buffer and advances the offset
+    uint16_t Parser::readInt16(const uint8_t* buffer, uint16_t& offset) {
+        uint16_t value = (buffer[offset] << 8) | buffer[offset + 1];
+        offset += 2;
+        return value;
+    }
+
+    // Reads a big-endian Int32 from the buffer and advances the offset
+    uint32_t Parser::readInt32(const uint8_t* buffer, uint16_t& offset) {
+        uint32_t value =
+            (buffer[offset] << 24) |
+            (buffer[offset + 1] << 16) |
+            (buffer[offset + 2] << 8) |
+            buffer[offset + 3];
+        offset += 4;
+        return value;
+    }
+
+    // Reads a big-endian Int64 from the buffer and advances the offset
+    uint64_t Parser::readInt64(const uint8_t* buffer, uint16_t& offset) {
+        uint64_t value =
+            ((uint64_t)buffer[offset] << 56) |
+            ((uint64_t)buffer[offset + 1] << 48) |
+            ((uint64_t)buffer[offset + 2] << 40) |
+            ((uint64_t)buffer[offset + 3] << 32) |
+            ((uint64_t)buffer[offset + 4] << 24) |
+            ((uint64_t)buffer[offset + 5] << 16) |
+            ((uint64_t)buffer[offset + 6] << 8) |
+            (uint64_t)buffer[offset + 7];
+        offset += 8;
+        return value;
+    }
+
     std::string Parser::getClientId(const uint8_t* buffer, uint16_t length) {
         return std::string(reinterpret_cast<const char*>(buffer + 14), length);
     }
@@ -56,19 +96,91 @@ namespace Core {
         return results;
     }
 
+    uint32_t Parser::readVarUInt(const uint8_t* buffer, uint16_t& offset) {
+        uint32_t value = 0;
+        int shift = 0;
+        uint8_t byte;
+
+        while (true) {
+            byte = buffer[offset++];
+            value |= (byte & 0x7F) << shift;
+
+            if ((byte & 0x80) == 0) break;
+
+            shift += 7;
+        }
+
+        // Zigzag decoding
+        return value;
+    }
+
+    std::vector<uint8_t> Parser::readUUID(const uint8_t* buffer, uint16_t& offset) {
+        std::vector<uint8_t> uuid(buffer + offset, buffer + offset + 16);
+        offset += 16;
+        return uuid;
+    }
+
+    bool Parser::readBoolean(const uint8_t* buffer, uint16_t& offset) {
+        bool value = buffer[offset] != 0;
+        offset += 1;
+        return value;
+    }
+
+    std::string Parser::readCompactNullableString(const uint8_t* buffer, uint16_t& offset) {
+        uint32_t length = readInt16(buffer, offset);
+
+        // Compact Nullable String length is (length + 1). 0 means null.
+        // If length is 0, the string is null. If it's > 0, the actual string length is length - 1.
+        if (length == 0) {
+            return ""; // Representing null or empty based on convention
+        }
+        std::string str(reinterpret_cast<const char*>(buffer + offset), length);
+        offset += length;
+        return str;
+    }
+
+    void Parser::getFetchTopics(CoreTypes::ParsedRequest& r, const uint8_t* buffer, uint16_t& offset) {
+
+        r.replicaId = readInt32(buffer, offset);
+        r.maxWaitMs = readInt32(buffer, offset);
+        r.minBytes = readInt32(buffer, offset);
+        r.maxBytesRequest = readInt32(buffer, offset);
+        r.isolationLevel = readInt8(buffer, offset);
+        r.sessionId = readInt32(buffer, offset);
+
+        uint32_t num_topics = readInt16(buffer, offset) - 1;
+        if (num_topics == 0) return;
+
+        r.fetchTopics.resize(num_topics); // Resize the vector to hold the fetchTopics
+
+            for (uint32_t i = 0; i < num_topics; ++i) {
+                r.fetchTopics[i].topicId = readUUID(buffer, offset);
+            }
+
+        PRINT_HIGHLIGHT("FINISHED PARSING FETCH REQUEST BODY");
+    }
+
     CoreTypes::ParsedRequest Parser::parseRequest(const uint8_t* buffer) {
 
         CoreTypes::ParsedRequest r {};
+        uint16_t offset {};
 
-        r.requestSize = getRequestSize(buffer); // 4
-        r.apiKey = getApiKey(buffer); // 2
-        r.apiVersion = getApiVersion(buffer); // 2
-        r.correlationId = getCorrelationId(buffer); // 4
+        // Parse Header using helper methods
+        r.requestSize = readInt32(buffer, offset); // 4 bytes
+        r.apiKey = readInt16(buffer, offset);     // 2 bytes
+        r.apiVersion = readInt16(buffer, offset); // 2 bytes
+        r.correlationId = readInt32(buffer, offset); // 4 bytes
 
-        uint16_t offset = 15 + getClientIdLength(buffer);
+        if (r.apiKey == CoreTypes::DESCRIBE_TOPIC_API) {
+            uint16_t offset = 15 + getClientIdLength(buffer);
+            r.topics = getTopics(buffer, offset);
 
+        }
+        else if (r.apiKey == CoreTypes::FETCH_API) {
+            r.clientId = readCompactNullableString(buffer, offset);
+            getFetchTopics(r, buffer, offset);
+        }
 
-        if (r.apiKey == CoreTypes::DESCRIBE_TOPIC_API) r.topics = getTopics(buffer, offset);
         return r;
 
     }

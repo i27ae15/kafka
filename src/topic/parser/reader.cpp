@@ -106,7 +106,7 @@ namespace Topics {
                 }
 
             } catch (std::runtime_error) {
-                PRINT_INFO("ENTIRE FILED READ, NOT ALL TOPICS FOUND");
+                PRINT_INFO("ENTIRE FILE READ, NOT ALL TOPICS FOUND");
                 return;
             }
 
